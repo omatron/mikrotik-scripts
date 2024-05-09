@@ -1,0 +1,51 @@
+:local time;
+:local date;
+
+
+:local webpage1	"8.8.8.8"
+:local webpage2	"1.1.1.1"
+
+:global InternetStatus;
+:global InternetLastChange;
+:global F;
+
+:set F 0;
+:for i from=1 to=2 do={
+    if ([/ping $webpage1 count=1]=0 ) do={ :set $F ($F+1) }
+	if ([/ping $webpage2 count=1]=0 ) do={ :set $F ($F+1) }
+	:delay 1;
+};
+				
+:if (($F=4)) do={
+	:if (($InternetStatus="UP")) do={
+		:log info "WARNING : The INTERNET service's gone DOWN";
+		:set InternetStatus "DOWN";
+
+##		do something
+
+				
+		:set date [/system clock get date];
+		:set time [/system clock get time];
+		:set InternetLastChange ($time . " " . $date);
+        /interface ethernet disable [find comment=Claro]
+				
+	} else={
+        :set InternetStatus "DOWN";
+        /interface ethernet disable [find comment=Claro]
+        }
+} else={
+	:if (($InternetStatus="DOWN")) do={	
+		:log info "WARNING : The INTERNET service's gone UP"; 
+		:set InternetStatus "UP";
+
+##		do something
+
+		:set date [/system clock get date];
+		:set time [/system clock get time];
+		:set InternetLastChange ($time . " " . $date);
+        
+				
+	} else={:set InternetStatus "UP";}
+}
+:put $InternetStatus;
+:put $F;
